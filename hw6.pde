@@ -105,6 +105,8 @@ void pieChart(State state) {
 boolean inPieChart(int mx, int my) {
    int pieX = (width/4);
    int pieY = (height/2);
+   float angle = -1*(atan2(my - pieY, pieX - mx) - PI);
+   println(angle);
    return ((pow((mx - pieX), 2) + pow((my - pieY), 2)) < pow(this.pieRadius, 2));
 }
 
