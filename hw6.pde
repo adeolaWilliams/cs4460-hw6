@@ -20,9 +20,12 @@ ControlP5 cp5;
 DropdownList dropDown;
 Table cData;
 ArrayList<State> states = new ArrayList<State>();
+ArrayList<Slice> pieSlices;
 color[] colors = {#993300, #CC9900, #CC6600, #CC1234, #993999, #883311};
 int pieRadius = 100;
 int stateIndex;
+int activePie;
+
 
 void setup() {
   size(640, 360);
@@ -38,6 +41,7 @@ void setup() {
   customizeList(dropDown);
   
   this.stateIndex = 0;
+  this.activePie = -1;
 }
 
 // Manages the P5 events
@@ -45,6 +49,7 @@ void controlEvent(ControlEvent theEvent) {
   if (theEvent.isGroup()) {
     // check if the Event was triggered from a ControlGroup
     this.stateIndex = int (theEvent.getGroup().getValue());
+    this.activePie = -1;
   } 
 }
 
@@ -55,7 +60,11 @@ void draw() {
 
 void mouseClicked() {
    if (inPieChart(mouseX, mouseY)) {
-      println("in!");
+      for (Slice slice : pieSlices) {
+         if (slice.contains(mouseX, mouseY)) {
+            this.activePie = slice.id;
+         } 
+      }
    } else {
       println("out"); 
    }
@@ -84,12 +93,16 @@ void customizeList(DropdownList ddl) {
 void pieChart(State state) {
   float[] data = state.getPercentages();
   float lastAngle = 0;
+  pieSlices = new ArrayList<Slice>();
   for (int i = 0; i < data.length; i++) {
     float angle = data[i] * 360;
     fill(colors[i]);
-    arc(width/4, height/2, this.pieRadius * 2, this.pieRadius * 2,
-        lastAngle, lastAngle+radians(angle));
-        
+     Slice curSlice = new Slice(i, lastAngle, 
+                                 lastAngle+radians(angle), 
+                                  this.pieRadius);
+     if (activePie == i) { curSlice.active = true; }
+     curSlice.draw();
+     pieSlices.add(curSlice);
     // Find the point to place the label text
     float middle = (lastAngle + (lastAngle + radians(angle))) / 2;
     float labelX = cos(middle) * this.pieRadius + width/4;
@@ -105,8 +118,6 @@ void pieChart(State state) {
 boolean inPieChart(int mx, int my) {
    int pieX = (width/4);
    int pieY = (height/2);
-   float angle = -1*(atan2(my - pieY, pieX - mx) - PI);
-   println(angle);
    return ((pow((mx - pieX), 2) + pow((my - pieY), 2)) < pow(this.pieRadius, 2));
 }
 
@@ -145,6 +156,41 @@ class State {
         percentages[i] = data[i] / this.numWorkers;
       }
       return percentages;
+   }
+}
+
+class Slice {
+   int id;
+   float startAngle, endAngle, pieRadius;
+   boolean active;
+   
+   Slice(int id, float startAngle, 
+         float endAngle, float pieRadius) {
+      this.id = id;
+      this.startAngle = startAngle;
+      this.endAngle = endAngle;
+      this.pieRadius = pieRadius;
+      this.active = false;
+   }
+   
+   void draw() {
+     if (this.active) {
+        fill(100); 
+     }
+     arc(width/4, height/2, this.pieRadius * 2, this.pieRadius * 2,
+        startAngle, endAngle);
+   }
+   
+   boolean contains(float mx, float my) {
+      int pieX = (width/4);
+      int pieY = (height/2);
+      float angle = -1*(atan2(my - pieY, pieX - mx) - PI);
+      if (angle >= this.startAngle) {
+         if (angle <= this.endAngle) {
+            return true;
+         } 
+      }
+      return false;
    }
 }
 
