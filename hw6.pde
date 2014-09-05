@@ -58,7 +58,7 @@ void draw() {
   pieChart(states.get(this.stateIndex));
 }
 
-void mouseClicked() {
+void mouseMoved() {
    if (inPieChart(mouseX, mouseY)) {
       for (Slice slice : pieSlices) {
          if (slice.contains(mouseX, mouseY)) {
@@ -66,7 +66,7 @@ void mouseClicked() {
          } 
       }
    } else {
-      println("out"); 
+      this.activePie = -1;
    }
 }
 
@@ -91,6 +91,7 @@ void customizeList(DropdownList ddl) {
 
 // Draws Pie Chart, code taken from processing.org
 void pieChart(State state) {
+  float[] numbers = state.getData();
   float[] data = state.getPercentages();
   float lastAngle = 0;
   pieSlices = new ArrayList<Slice>();
@@ -99,16 +100,11 @@ void pieChart(State state) {
     fill(colors[i]);
      Slice curSlice = new Slice(i, lastAngle, 
                                  lastAngle+radians(angle), 
-                                  this.pieRadius);
+                                  this.pieRadius, numbers[i]);
      if (activePie == i) { curSlice.active = true; }
      curSlice.draw();
+     curSlice.drawLabel();
      pieSlices.add(curSlice);
-    // Find the point to place the label text
-    float middle = (lastAngle + (lastAngle + radians(angle))) / 2;
-    float labelX = cos(middle) * this.pieRadius + width/4;
-    float labelY = sin(middle) * this.pieRadius + height/2;
-    fill(#FFFFFF);
-    text("placeholder", labelX, labelY);
     
     // Increase the Angle for the next pass
     lastAngle += radians(angle);
@@ -161,24 +157,36 @@ class State {
 
 class Slice {
    int id;
-   float startAngle, endAngle, pieRadius;
+   float startAngle, endAngle, pieRadius, data;
    boolean active;
    
    Slice(int id, float startAngle, 
-         float endAngle, float pieRadius) {
+         float endAngle, float pieRadius,
+         float data) {
       this.id = id;
       this.startAngle = startAngle;
       this.endAngle = endAngle;
       this.pieRadius = pieRadius;
       this.active = false;
+      this.data = data;
    }
    
    void draw() {
      if (this.active) {
+        fill(#FFFFFF);
+        text(int (data), 50, 50);
         fill(100); 
      }
      arc(width/4, height/2, this.pieRadius * 2, this.pieRadius * 2,
         startAngle, endAngle);
+   }
+   
+   void drawLabel() {
+      float middle = (startAngle + endAngle) / 2;
+      float labelX = cos(middle) * this.pieRadius + width/4;
+      float labelY = sin(middle) * this.pieRadius + height/2;
+      fill(#FFFFFF);
+      text("placeholder", labelX, labelY);
    }
    
    boolean contains(float mx, float my) {
