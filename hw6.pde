@@ -28,7 +28,6 @@ void setup() {
   size(640, 360);
   
   cData = loadTable("CommuterData.csv", "header");
-  
   // Create a new State object for each row of data
   for (TableRow row : cData.rows()) {
       states.add(new State(row));
@@ -50,6 +49,7 @@ void controlEvent(ControlEvent theEvent) {
 }
 
 void draw() {
+  background(100);
   pieChart(states.get(this.stateIndex));
 }
 
@@ -89,6 +89,15 @@ void pieChart(State state) {
     fill(colors[i]);
     arc(width/4, height/2, this.pieRadius * 2, this.pieRadius * 2,
         lastAngle, lastAngle+radians(angle));
+        
+    // Find the point to place the label text
+    float middle = (lastAngle + (lastAngle + radians(angle))) / 2;
+    float labelX = cos(middle) * this.pieRadius + width/4;
+    float labelY = sin(middle) * this.pieRadius + height/2;
+    fill(#FFFFFF);
+    text("placeholder", labelX, labelY);
+    
+    // Increase the Angle for the next pass
     lastAngle += radians(angle);
   }
 }
