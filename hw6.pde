@@ -41,15 +41,13 @@ void setup() {
   this.stateIndex = 0;
 }
 
+// Manages the P5 events
 void controlEvent(ControlEvent theEvent) {
-
   if (theEvent.isGroup()) {
     // check if the Event was triggered from a ControlGroup
     this.stateIndex = int (theEvent.getGroup().getValue());
   } 
-
 }
-
 
 void draw() {
   pieChart(states.get(this.stateIndex));
@@ -79,6 +77,7 @@ void customizeList(DropdownList ddl) {
   //ddl.scroll(0);
   ddl.setColorBackground(color(60));
   ddl.setColorActive(color(255, 128));
+  ddl.setValue(this.stateIndex);
 }
 
 // Draws Pie Chart, code taken from processing.org
