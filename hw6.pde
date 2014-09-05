@@ -26,7 +26,6 @@ int pieRadius = 100;
 int stateIndex;
 int activePie;
 
-
 void setup() {
   size(640, 360);
   
@@ -155,6 +154,7 @@ class State {
    }
 }
 
+// Class that represents a slice of a pie chart
 class Slice {
    int id;
    float startAngle, endAngle, pieRadius, data;
