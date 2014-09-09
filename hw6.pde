@@ -27,7 +27,7 @@ int stateIndex;
 int activePie;
 
 void setup() {
-  size(640, 360);
+  size(1280, 500);
   
   cData = loadTable("CommuterData.csv", "header");
   // Create a new State object for each row of data
@@ -36,7 +36,7 @@ void setup() {
   }
   cp5 = new ControlP5(this);
   dropDown = cp5.addDropdownList("myList-d1")
-            .setPosition(400, 200);
+            .setPosition((width/4)-50, height-(height/4));
   customizeList(dropDown);
   
   this.stateIndex = 0;
@@ -53,7 +53,7 @@ void controlEvent(ControlEvent theEvent) {
 }
 
 void draw() {
-  background(100);
+  background(190);
   pieChart(states.get(this.stateIndex));
 }
 
@@ -111,7 +111,7 @@ void pieChart(State state) {
 }
 
 boolean inPieChart(int mx, int my) {
-   int pieX = (width/4);
+   int pieX = (width/6);
    int pieY = (height/2);
    return ((pow((mx - pieX), 2) + pow((my - pieY), 2)) < pow(this.pieRadius, 2));
 }
@@ -177,20 +177,20 @@ class Slice {
         text(int (data), 50, 50);
         fill(100); 
      }
-     arc(width/4, height/2, this.pieRadius * 2, this.pieRadius * 2,
+     arc(width/6, height/2, this.pieRadius * 2, this.pieRadius * 2,
         startAngle, endAngle);
    }
    
    void drawLabel() {
       float middle = (startAngle + endAngle) / 2;
-      float labelX = cos(middle) * this.pieRadius + width/4;
+      float labelX = cos(middle) * this.pieRadius + width/6;
       float labelY = sin(middle) * this.pieRadius + height/2;
       fill(#FFFFFF);
       text("placeholder", labelX, labelY);
    }
    
    boolean contains(float mx, float my) {
-      int pieX = (width/4);
+      int pieX = (width/6);
       int pieY = (height/2);
       float angle = -1*(atan2(my - pieY, pieX - mx) - PI);
       if (angle >= this.startAngle) {
