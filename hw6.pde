@@ -36,7 +36,7 @@ void setup() {
   }
   cp5 = new ControlP5(this);
   dropDown = cp5.addDropdownList("myList-d1")
-            .setPosition((width/4)-50, height-(height/4));
+            .setPosition((width/6)-50, height-(height/4));
   customizeList(dropDown);
   
   this.stateIndex = 0;
