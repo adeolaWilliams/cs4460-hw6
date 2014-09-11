@@ -27,12 +27,14 @@ color[] colors = {#993300, #CC9900, #CC6600, #CC1234, #993999, #883311};
 int pieRadius = 100;
 int stateIndex;
 int activePie;
-FloatDict droveAloneDict;
+FloatDict droveAloneDict, carPoolDict, publicTransDict;
+FloatDict walkedDict, otherDict, homeDict;
 float maxCommute;
+ArrayList<FloatDict> dictList;
 
 void setup() {
   size(800, 500);
-  droveAloneDict = new FloatDict();
+  setupDicts();
   maxCommute = -1;
   cData = loadTable("CommuterData.csv", "header");
   // Remove United States entry
@@ -44,8 +46,14 @@ void setup() {
   
   for (State state : states) {
      droveAloneDict.set(state.name, state.numDroveAlone);
-     if (state.numDroveAlone > maxCommute) {
-        maxCommute = state.numDroveAlone; 
+     carPoolDict.set(state.name, state.numCarPooled);
+     publicTransDict.set(state.name, state.numPublicTransit);
+     walkedDict.set(state.name, state.numWalked);
+     otherDict.set(state.name, state.numOther);
+     homeDict.set(state.name, state.numWorkedHome);
+     float max = max(state.getData());
+     if (max > maxCommute) {
+        maxCommute = max; 
      }
   }  
  
@@ -56,6 +64,23 @@ void setup() {
   
   this.stateIndex = 0;
   this.activePie = -1;
+}
+
+// Setup the dicts to use for sorting for part 2
+void setupDicts() {
+  droveAloneDict = new FloatDict();
+  carPoolDict = new FloatDict();
+  publicTransDict = new FloatDict();
+  walkedDict = new FloatDict();
+  otherDict = new FloatDict();
+  homeDict = new FloatDict();
+  dictList = new ArrayList<FloatDict>();
+  dictList.add(droveAloneDict);
+  dictList.add(carPoolDict);
+  dictList.add(publicTransDict);
+  dictList.add(walkedDict);
+  dictList.add(otherDict);
+  dictList.add(homeDict);
 }
 
 // Manages the P5 events
@@ -135,19 +160,21 @@ boolean inPieChart(int mx, int my) {
 void bubbleChart() {
    int baseX = width/2 + 100;
    int baseY = height/6;
-   for (int i = 0; i < 6; i++) {
-     drawDroveAlone(baseX, baseY + (i*70));
+   int i = 0;
+   for (FloatDict list : dictList) {
+      drawBubbles(baseX, baseY + (i*70), list); 
+      i++;
    }
 }
 
-void drawDroveAlone(int baseX, int baseY) {
-   droveAloneDict.sortValuesReverse();
-   println(droveAloneDict.key(0));
+void drawBubbles(int baseX, int baseY, FloatDict dict) {
+   dict.sortValuesReverse();
    int counter = 0;
+   float max = dict.value(0);
    for (int i = 2; i >= 0; i--) {
-      String state = droveAloneDict.key(i);
-      float value = droveAloneDict.value(i);
-      value = value / maxCommute;
+      String state = dict.key(i);
+      float value = dict.value(i);
+      value = value / max;
       float size = value * 60;
       ellipse(baseX + (counter*65), baseY, size, size); 
       counter++;
