@@ -26,11 +26,13 @@ ArrayList<Slice> pieSlices;
 color[] colors = {#993300, #CC9900, #CC6600, #CC1234, #993999, #883311};
 int pieRadius = 100;
 int stateIndex;
-int activePie;
+int activePie, activeBubble;
+int bubId;
 FloatDict droveAloneDict, carPoolDict, publicTransDict;
 FloatDict walkedDict, otherDict, homeDict;
 float maxCommute;
 ArrayList<FloatDict> dictList;
+ArrayList<Bubble> curBubbles;
 
 void setup() {
   size(800, 500);
@@ -64,6 +66,7 @@ void setup() {
   
   this.stateIndex = 0;
   this.activePie = -1;
+  this.activeBubble = -1;
 }
 
 // Setup the dicts to use for sorting for part 2
@@ -107,6 +110,17 @@ void mouseMoved() {
       }
    } else {
       this.activePie = -1;
+      boolean inBub = false;
+      for (Bubble cur : curBubbles) {
+         if (cur.contains(mouseX, mouseY)) {
+            this.activeBubble = cur.id;
+            inBub = true;
+         }
+      }
+      
+      if (!inBub) {
+         this.activeBubble = -1; 
+      }
    }
 }
 
@@ -161,6 +175,8 @@ void bubbleChart() {
    int baseX = width/2 + 100;
    int baseY = height/6;
    int i = 0;
+   this.bubId = 0;
+   curBubbles = new ArrayList<Bubble>();
    for (FloatDict list : dictList) {
       drawBubbles(baseX, baseY + (i*70), list); 
       i++;
@@ -176,8 +192,16 @@ void drawBubbles(int baseX, int baseY, FloatDict dict) {
       float value = dict.value(i);
       value = value / max;
       float size = value * 60;
-      ellipse(baseX + (counter*65), baseY, size, size); 
+      Bubble curBub = new Bubble(this.bubId, size, baseX + (counter*65), 
+                                  baseY);
+                                  
+      if (this.activeBubble == bubId) { 
+        curBub.active = true;
+      }
+      curBub.draw();
+      curBubbles.add(curBub);
       counter++;
+      this.bubId++;
    } 
 }
 
@@ -265,5 +289,31 @@ class Slice {
       }
       return false;
    }
+}
+
+class Bubble {
+  int id;
+  boolean active;
+  float size, baseX, baseY;
+  
+  Bubble(int id, float size, float baseX, float baseY) {
+    this.id = id;
+    this.size = size;
+    this.baseX = baseX;
+    this.baseY = baseY;
+  }
+  
+  void draw() {
+    fill(#FFFFFF);
+    if (active) {
+       fill(100);
+    }
+    
+    ellipse(baseX, baseY, size, size); 
+  }
+  
+  boolean contains(float mx, float my) {
+    return ((pow((mx - baseX), 2) + pow((my - baseY), 2)) < pow(size/2, 2));
+  }
 }
 
