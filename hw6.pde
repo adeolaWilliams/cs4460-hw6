@@ -15,6 +15,8 @@ Wyoming
 /* Main Functions */
 
 import controlP5.*;
+import java.util.Map.Entry;
+import java.util.Map;
 
 ControlP5 cp5;
 DropdownList dropDown;
@@ -25,15 +27,28 @@ color[] colors = {#993300, #CC9900, #CC6600, #CC1234, #993999, #883311};
 int pieRadius = 100;
 int stateIndex;
 int activePie;
+FloatDict droveAloneDict;
+float maxCommute;
 
 void setup() {
-  size(1280, 500);
-  
+  size(800, 500);
+  droveAloneDict = new FloatDict();
+  maxCommute = -1;
   cData = loadTable("CommuterData.csv", "header");
+  // Remove United States entry
+  cData.removeRow(0);
   // Create a new State object for each row of data
   for (TableRow row : cData.rows()) {
       states.add(new State(row));
   }
+  
+  for (State state : states) {
+     droveAloneDict.set(state.name, state.numDroveAlone);
+     if (state.numDroveAlone > maxCommute) {
+        maxCommute = state.numDroveAlone; 
+     }
+  }  
+ 
   cp5 = new ControlP5(this);
   dropDown = cp5.addDropdownList("myList-d1")
             .setPosition((width/6)-50, height-(height/4));
@@ -55,6 +70,7 @@ void controlEvent(ControlEvent theEvent) {
 void draw() {
   background(190);
   pieChart(states.get(this.stateIndex));
+  bubbleChart();
 }
 
 void mouseMoved() {
@@ -116,6 +132,28 @@ boolean inPieChart(int mx, int my) {
    return ((pow((mx - pieX), 2) + pow((my - pieY), 2)) < pow(this.pieRadius, 2));
 }
 
+void bubbleChart() {
+   int baseX = width/2 + 100;
+   int baseY = height/6;
+   for (int i = 0; i < 6; i++) {
+     drawDroveAlone(baseX, baseY + (i*70));
+   }
+}
+
+void drawDroveAlone(int baseX, int baseY) {
+   droveAloneDict.sortValuesReverse();
+   println(droveAloneDict.key(0));
+   int counter = 0;
+   for (int i = 2; i >= 0; i--) {
+      String state = droveAloneDict.key(i);
+      float value = droveAloneDict.value(i);
+      value = value / maxCommute;
+      float size = value * 60;
+      ellipse(baseX + (counter*65), baseY, size, size); 
+      counter++;
+   } 
+}
+
 /* Classes */
 class State {
    String name;
@@ -132,7 +170,7 @@ class State {
       this.numWalked = row.getFloat(5);
       this.numOther = row.getFloat(6);
       this.numWorkedHome = row.getFloat(7);
-      this.travelTime = row.getFloat(8); 
+      this.travelTime = row.getFloat(8);
    }
    
    // Returns the data in a float array
