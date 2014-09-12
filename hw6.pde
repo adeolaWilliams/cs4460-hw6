@@ -18,6 +18,7 @@ import java.util.Map;
 
 ControlP5 cp5;
 DropdownList dropDown;
+Toggle cToggle;
 Table cData;
 ArrayList<State> states = new ArrayList<State>();
 ArrayList<Slice> pieSlices;
@@ -29,6 +30,8 @@ FloatDict walkedDict, otherDict, homeDict, stateMap;
 float maxCommute;
 ArrayList<FloatDict> dictList;
 ArrayList<Bubble> curBubbles;
+String toggleString;
+boolean toggleState; // True: Numbers, False: Percentages
 
 void setup() {
   size(800, 500);
@@ -47,10 +50,18 @@ void setup() {
             .setPosition((width/6)-50, height-(height/4));
   customizeList(dropDown);
   
+  Toggle cToggle = cp5.addToggle("toggle")
+                   .setPosition(700,400)
+                   .setSize(30,10)
+                   .setValue(true)
+                   .setMode(ControlP5.SWITCH);
+  cToggle.setLabel("");
+
   this.stateIndex = 0;
   this.activePie = -1;
   this.activeBubble = -1;
   this.brushState = -1;
+  this.toggleString = "Numbers";
 }
 
 void setupStates(Table cData) {
@@ -103,10 +114,25 @@ void controlEvent(ControlEvent theEvent) {
   } 
 }
 
+void toggle(boolean theFlag) {
+  this.toggleState = theFlag;
+  if (theFlag) {
+    this.toggleString = "Numbers"; 
+  } else {
+    this.toggleString = "Percentages"; 
+  }
+}
+
 void draw() {
   background(190);
   pieChart(states.get(this.stateIndex));
   bubbleChart();
+  drawToggleString();
+}
+
+void drawToggleString() {
+  fill(#ffffff);
+  text(this.toggleString, 700, 390);
 }
 
 void mouseMoved() {
