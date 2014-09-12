@@ -13,9 +13,7 @@ Wyoming
 */
 
 /* Main Functions */
-
 import controlP5.*;
-import java.util.Map.Entry;
 import java.util.Map;
 
 ControlP5 cp5;
@@ -25,11 +23,9 @@ ArrayList<State> states = new ArrayList<State>();
 ArrayList<Slice> pieSlices;
 color[] colors = {#993300, #CC9900, #CC6600, #CC1234, #993999, #883311};
 int pieRadius = 100;
-int stateIndex;
-int activePie, activeBubble;
-int bubId;
+int activePie, activeBubble, stateIndex, bubId, brushState;
 FloatDict droveAloneDict, carPoolDict, publicTransDict;
-FloatDict walkedDict, otherDict, homeDict;
+FloatDict walkedDict, otherDict, homeDict, stateMap;
 float maxCommute;
 ArrayList<FloatDict> dictList;
 ArrayList<Bubble> curBubbles;
@@ -41,9 +37,30 @@ void setup() {
   cData = loadTable("CommuterData.csv", "header");
   // Remove United States entry
   cData.removeRow(0);
-  // Create a new State object for each row of data
+  
+  setupStates(cData);
+  
+  // Create a new State object for each row of dat
+ 
+  cp5 = new ControlP5(this);
+  dropDown = cp5.addDropdownList("myList-d1")
+            .setPosition((width/6)-50, height-(height/4));
+  customizeList(dropDown);
+  
+  this.stateIndex = 0;
+  this.activePie = -1;
+  this.activeBubble = -1;
+  this.brushState = -1;
+}
+
+void setupStates(Table cData) {
+  int id = 0;
+  stateMap = new FloatDict();
   for (TableRow row : cData.rows()) {
-      states.add(new State(row));
+      State curState = new State(row, id);
+      states.add(curState);
+      stateMap.set(curState.name, id);
+      id++;
   }
   
   for (State state : states) {
@@ -58,15 +75,6 @@ void setup() {
         maxCommute = max; 
      }
   }  
- 
-  cp5 = new ControlP5(this);
-  dropDown = cp5.addDropdownList("myList-d1")
-            .setPosition((width/6)-50, height-(height/4));
-  customizeList(dropDown);
-  
-  this.stateIndex = 0;
-  this.activePie = -1;
-  this.activeBubble = -1;
 }
 
 // Setup the dicts to use for sorting for part 2
@@ -114,12 +122,14 @@ void mouseMoved() {
       for (Bubble cur : curBubbles) {
          if (cur.contains(mouseX, mouseY)) {
             this.activeBubble = cur.id;
+            this.brushState = cur.stateId;
             inBub = true;
          }
       }
       
       if (!inBub) {
-         this.activeBubble = -1; 
+         this.activeBubble = -1;
+         this.brushState = -1; 
       }
    }
 }
@@ -190,14 +200,20 @@ void drawBubbles(int baseX, int baseY, FloatDict dict) {
    for (int i = 2; i >= 0; i--) {
       String state = dict.key(i);
       float value = dict.value(i);
+      int stateId = (int)stateMap.get(state);
       value = value / max;
       float size = value * 60;
       Bubble curBub = new Bubble(this.bubId, size, baseX + (counter*65), 
-                                  baseY);
+                                  baseY, stateId);
                                   
       if (this.activeBubble == bubId) { 
         curBub.active = true;
       }
+      
+      if (this.brushState == stateId) {
+         curBub.brushed = true; 
+      }
+      
       curBub.draw();
       curBubbles.add(curBub);
       counter++;
@@ -207,12 +223,13 @@ void drawBubbles(int baseX, int baseY, FloatDict dict) {
 
 /* Classes */
 class State {
+   int id;
    String name;
    float numWorkers, numDroveAlone, numCarPooled, numPublicTransit;
    float numWalked, numOther, numWorkedHome, travelTime;
    
    // Constructor that takes in a Tablerow
-   State(TableRow row) {
+   State(TableRow row, int id) {
       this.name = row.getString(0);
       this.numWorkers = row.getFloat(1);
       this.numDroveAlone = row.getFloat(2);
@@ -222,6 +239,7 @@ class State {
       this.numOther = row.getFloat(6);
       this.numWorkedHome = row.getFloat(7);
       this.travelTime = row.getFloat(8);
+      this.id = id;
    }
    
    // Returns the data in a float array
@@ -292,24 +310,26 @@ class Slice {
 }
 
 class Bubble {
-  int id;
-  boolean active;
+  int id, stateId;
+  boolean active, brushed;
   float size, baseX, baseY;
   
-  Bubble(int id, float size, float baseX, float baseY) {
+  Bubble(int id, float size, float baseX, float baseY, int stateId) {
     this.id = id;
     this.size = size;
     this.baseX = baseX;
     this.baseY = baseY;
+    this.stateId = stateId;
   }
   
   void draw() {
     fill(#FFFFFF);
-    if (active) {
+    if (active || brushed) {
        fill(100);
     }
-    
-    ellipse(baseX, baseY, size, size); 
+    ellipse(baseX, baseY, size, size);
+    fill(100);
+    text((int)this.stateId, baseX, baseY); 
   }
   
   boolean contains(float mx, float my) {
