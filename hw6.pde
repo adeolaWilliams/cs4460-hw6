@@ -201,10 +201,10 @@ void drawBubbles(int baseX, int baseY, FloatDict dict) {
       String state = dict.key(i);
       float value = dict.value(i);
       int stateId = (int)stateMap.get(state);
-      value = value / max;
-      float size = value * 60;
+      float newValue = value / max;
+      float size = newValue * 60;
       Bubble curBub = new Bubble(this.bubId, size, baseX + (counter*65), 
-                                  baseY, stateId);
+                                  baseY, stateId, value);
                                   
       if (this.activeBubble == bubId) { 
         curBub.active = true;
@@ -312,21 +312,28 @@ class Slice {
 class Bubble {
   int id, stateId;
   boolean active, brushed;
-  float size, baseX, baseY;
+  float size, baseX, baseY, value;
   
-  Bubble(int id, float size, float baseX, float baseY, int stateId) {
+  Bubble(int id, float size, float baseX, float baseY, int stateId, float value) {
     this.id = id;
     this.size = size;
     this.baseX = baseX;
     this.baseY = baseY;
     this.stateId = stateId;
+    this.value = value;
   }
   
   void draw() {
     fill(#FFFFFF);
-    if (active || brushed) {
+    if (active) {
        fill(100);
+       text( (int) this.value, 600, 20);
     }
+    
+    if (brushed && !active) {
+      fill(100, .8);
+    }
+    
     ellipse(baseX, baseY, size, size);
     fill(100);
     text((int)this.stateId, baseX, baseY); 
